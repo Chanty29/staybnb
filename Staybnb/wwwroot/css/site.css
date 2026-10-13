@@ -1,0 +1,31 @@
+:root {
+    --brand: #ff385c;
+    --brand-dark: #e0284b;
+}
+
+body {
+    background-color: #f7f7f7;
+}
+
+.brand {
+    color: var(--brand);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.btn-brand {
+    background-color: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
+}
+
+.btn-brand:hover {
+    background-color: var(--brand-dark);
+    border-color: var(--brand-dark);
+    color: #fff;
+}
+
+.auth-card {
+    max-width: 440px;
+    margin: 2rem auto;
+}
