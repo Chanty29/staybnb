@@ -34,7 +34,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.Configure<SecurityStampValidatorOptions>(options =>
     options.ValidationInterval = TimeSpan.Zero);
 
-builder.Services.AddControllersWithViews();
+// Our models have navigation properties like "Host" that are not filled in by a form.
+// Without this line MVC would treat every non-nullable navigation as "required" and
+// reject the form.
+builder.Services.AddControllersWithViews(options =>
+    options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
 
 var app = builder.Build();
 

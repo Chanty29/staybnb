@@ -14,4 +14,9 @@ public class ApplicationUser : IdentityUser
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public string FullName => $"{FirstName} {LastName}".Trim();
+
+    // ----- Relationships -----
+    public ICollection<HostProperty> HostedProperties { get; set; } = new List<HostProperty>();
+    public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+    public ICollection<Review> Reviews { get; set; } = new List<Review>();
 }
