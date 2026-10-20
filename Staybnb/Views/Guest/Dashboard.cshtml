@@ -1,6 +1,44 @@
+@model HostApplication?
 @{
     ViewData["Title"] = "Guest Dashboard";
 }
 
 <h1 class="h3">Guest Dashboard</h1>
-<p class="text-muted">You are logged in as a Guest. Bookings and "Become a Host" arrive in later phases.</p>
+<p class="text-muted">You are logged in as a Guest. Browsing and bookings arrive in a later phase.</p>
+
+<div class="card shadow-sm mt-4">
+    <div class="card-body p-4">
+        <h2 class="h5">Host on Staybnb</h2>
+
+        @if (Model == null)
+        {
+            <p class="text-muted">Have a spare room, apartment or cabin? Apply to become a host and start earning.</p>
+            <a asp-controller="HostApplication" asp-action="Create" class="btn btn-brand">Become a Host</a>
+        }
+        else if (Model.Status == ApplicationStatus.Pending)
+        {
+            <p class="mb-2">
+                Your application for <strong>@Model.Property.Title</strong> is
+                <span class="badge bg-warning text-dark">Pending</span> review by an Admin.
+            </p>
+            <a asp-controller="HostApplication" asp-action="Status" class="btn btn-outline-secondary btn-sm">View application status</a>
+        }
+        else if (Model.Status == ApplicationStatus.Rejected)
+        {
+            <p class="mb-2">
+                Your application for <strong>@Model.Property.Title</strong> was
+                <span class="badge bg-danger">Rejected</span>.
+            </p>
+            @if (!string.IsNullOrWhiteSpace(Model.RejectionReason))
+            {
+                <p class="small text-muted">Reason: @Model.RejectionReason</p>
+            }
+            <a asp-controller="HostApplication" asp-action="Create" class="btn btn-brand btn-sm">Apply again</a>
+            <a asp-controller="HostApplication" asp-action="Status" class="btn btn-outline-secondary btn-sm">View status</a>
+        }
+        else
+        {
+            <p class="mb-0">Your application was approved.</p>
+        }
+    </div>
+</div>

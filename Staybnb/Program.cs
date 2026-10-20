@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Staybnb.Data;
 using Staybnb.Models;
+using Staybnb.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,12 +41,17 @@ builder.Services.Configure<SecurityStampValidatorOptions>(options =>
 builder.Services.AddControllersWithViews(options =>
     options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
 
+// Our own services (injected into controllers through their constructors).
+builder.Services.AddScoped<IActivityLogger, ActivityLogger>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
 var app = builder.Build();
 
-// Create the database, roles and SuperAdmin on startup.
+// Create the database, roles, SuperAdmin and the standard amenities on startup.
 using (var scope = app.Services.CreateScope())
 {
     await RoleSeeder.SeedAsync(scope.ServiceProvider);
+    await AmenitySeeder.SeedAsync(scope.ServiceProvider.GetRequiredService<ApplicationDbContext>());
 }
 
 if (!app.Environment.IsDevelopment())
@@ -56,6 +62,13 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+// Always read and show numbers the English way (1780.50). Without this, a computer set
+// to South African regional settings expects a comma (1780,50) and prices fail to parse.
+app.UseRequestLocalization(new RequestLocalizationOptions()
+    .SetDefaultCulture("en-US")
+    .AddSupportedCultures("en-US")
+    .AddSupportedUICultures("en-US"));
 
 app.UseRouting();
 

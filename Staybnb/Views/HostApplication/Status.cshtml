@@ -1,0 +1,71 @@
+@model List<HostApplication>
+@{
+    ViewData["Title"] = "Application Status";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Host application status</h1>
+    <a asp-action="Create" class="btn btn-brand">New application</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            <p class="text-muted mb-3">You have not submitted an application yet.</p>
+            <a asp-action="Create" class="btn btn-brand">Become a Host</a>
+        </div>
+    </div>
+}
+else
+{
+    foreach (var item in Model)
+    {
+        var badge = item.Status == ApplicationStatus.Approved ? "bg-success"
+                  : item.Status == ApplicationStatus.Rejected ? "bg-danger"
+                  : "bg-warning text-dark";
+        var cover = item.Property.Images.FirstOrDefault();
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        @if (cover != null)
+                        {
+                            <img src="@cover.ImageUrl" alt="@item.Property.Title" class="img-fluid rounded"
+                                 style="height: 120px; width: 100%; object-fit: cover;" />
+                        }
+                    </div>
+                    <div class="col-md-9">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h2 class="h5 mb-1">@item.Property.Title</h2>
+                                <div class="text-muted small">@item.Property.City, @item.Property.Country</div>
+                            </div>
+                            <span class="badge @badge">@item.Status</span>
+                        </div>
+
+                        <div class="mt-2 small">
+                            R @item.Property.PricePerNight.ToString("N2") per night
+                            &middot; @item.Property.Images.Count photo(s)
+                        </div>
+                        <div class="text-muted small">
+                            Applied @item.AppliedAt.ToLocalTime().ToString("d MMM yyyy, HH:mm")
+                            @if (item.ReviewedAt.HasValue)
+                            {
+                                <text>&middot; Reviewed @item.ReviewedAt.Value.ToLocalTime().ToString("d MMM yyyy, HH:mm")</text>
+                            }
+                        </div>
+
+                        @if (item.Status == ApplicationStatus.Rejected && !string.IsNullOrWhiteSpace(item.RejectionReason))
+                        {
+                            <div class="alert alert-danger py-2 mt-2 mb-0 small">
+                                <strong>Reason:</strong> @item.RejectionReason
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}

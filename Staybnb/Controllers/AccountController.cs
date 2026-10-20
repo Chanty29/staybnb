@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Staybnb.Constants;
 using Staybnb.Models;
+using Staybnb.Models.Enums;
+using Staybnb.Services;
 using Staybnb.ViewModels;
 
 namespace Staybnb.Controllers;
@@ -10,13 +12,16 @@ public class AccountController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IActivityLogger _activityLogger;
 
     public AccountController(
         UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager)
+        SignInManager<ApplicationUser> signInManager,
+        IActivityLogger activityLogger)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _activityLogger = activityLogger;
     }
 
     // ---------- Register ----------
@@ -54,6 +59,9 @@ public class AccountController : Controller
         // Every new registrant starts as a Guest.
         await _userManager.AddToRoleAsync(user, AppRoles.Guest);
 
+        await _activityLogger.LogAsync(user.Id, ActivityType.Registration,
+            $"New user registered: {user.Email}");
+
         await _signInManager.SignInAsync(user, isPersistent: false);
         return await RedirectByRoleAsync(user);
     }
@@ -82,17 +90,22 @@ public class AccountController : Controller
 
         if (!result.Succeeded)
         {
+            await _activityLogger.LogAsync(null, ActivityType.Login,
+                $"Failed login attempt for {model.Email}");
+
             ModelState.AddModelError(string.Empty, "Invalid email or password.");
             return View(model);
         }
+
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        await _activityLogger.LogAsync(user!.Id, ActivityType.Login, $"User logged in: {user.Email}");
 
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
         {
             return Redirect(returnUrl);
         }
 
-        var user = await _userManager.FindByEmailAsync(model.Email);
-        return await RedirectByRoleAsync(user!);
+        return await RedirectByRoleAsync(user);
     }
 
     // ---------- Logout ----------
@@ -100,7 +113,15 @@ public class AccountController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
+        var userId = _userManager.GetUserId(User);
+
         await _signInManager.SignOutAsync();
+
+        if (userId != null)
+        {
+            await _activityLogger.LogAsync(userId, ActivityType.Logout, "User logged out");
+        }
+
         return RedirectToAction("Index", "Home");
     }
 

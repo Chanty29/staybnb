@@ -24,8 +24,8 @@ Default SuperAdmin (change in `appsettings.json`): `superadmin@staybnb.com` / `S
 ## Progress
 
 - [x] Phase 1 - Solution setup, Identity, roles, SuperAdmin seeder
-- [ ] Phase 2 - Models, DbContext, migrations
-- [ ] Phase 3 - Host application flow
+- [x] Phase 2 - Models, DbContext, migrations
+- [x] Phase 3 - Host application flow
 - [ ] Phase 4 - Host dashboard
 - [ ] Phase 5 - Guest browsing, booking, check-in
 - [ ] Phase 6 - Admin dashboard

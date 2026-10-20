@@ -1,0 +1,174 @@
+@model HostApplicationViewModel
+@{
+    ViewData["Title"] = "Become a Host";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h1 class="h3 mb-1">Become a Host</h1>
+        <p class="text-muted">Tell us about your property. An Admin will review your application before it goes live.</p>
+
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+            <!-- 1. The basics -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-3">1. The basics</h2>
+
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control" maxlength="100" placeholder="e.g. Cozy Forest Cabin" required />
+                        <span asp-validation-for="Title" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label"></label>
+                        <textarea asp-for="Description" class="form-control" rows="5" maxlength="2000" required></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-0">
+                        <label asp-for="PropertyType" class="form-label"></label>
+                        <select asp-for="PropertyType" asp-items="Html.GetEnumSelectList<PropertyType>()" class="form-select"></select>
+                        <span asp-validation-for="PropertyType" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Where is it? -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-3">2. Where is it?</h2>
+
+                    <div class="mb-3">
+                        <label asp-for="Address" class="form-label"></label>
+                        <input asp-for="Address" class="form-control" maxlength="200" required />
+                        <span asp-validation-for="Address" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label asp-for="City" class="form-label"></label>
+                            <input asp-for="City" class="form-control" maxlength="100" required />
+                            <span asp-validation-for="City" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Country" class="form-label"></label>
+                            <input asp-for="Country" class="form-control" maxlength="100" required />
+                            <span asp-validation-for="Country" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Space and price -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-3">3. Space and price</h2>
+
+                    <div class="row">
+                        <div class="col-6 col-md-3 mb-3">
+                            <label asp-for="MaxGuests" class="form-label"></label>
+                            <input asp-for="MaxGuests" type="number" min="1" max="50" class="form-control" />
+                            <span asp-validation-for="MaxGuests" class="text-danger small"></span>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <label asp-for="Bedrooms" class="form-label"></label>
+                            <input asp-for="Bedrooms" type="number" min="0" max="50" class="form-control" />
+                            <span asp-validation-for="Bedrooms" class="text-danger small"></span>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <label asp-for="Beds" class="form-label"></label>
+                            <input asp-for="Beds" type="number" min="0" max="50" class="form-control" />
+                            <span asp-validation-for="Beds" class="text-danger small"></span>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <label asp-for="Bathrooms" class="form-label"></label>
+                            <input asp-for="Bathrooms" type="number" min="0" max="50" class="form-control" />
+                            <span asp-validation-for="Bathrooms" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label asp-for="PricePerNight" class="form-label"></label>
+                            <input asp-for="PricePerNight" type="text" inputmode="decimal" class="form-control" required />
+                            <span asp-validation-for="PricePerNight" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="CleaningFee" class="form-label"></label>
+                            <input asp-for="CleaningFee" type="text" inputmode="decimal" class="form-control" />
+                            <span asp-validation-for="CleaningFee" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Amenities -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-3">4. What does it offer?</h2>
+
+                    <div class="row">
+                        @foreach (var amenity in Model.AllAmenities)
+                        {
+                            <div class="col-6 col-md-4 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox"
+                                           name="SelectedAmenityIds" value="@amenity.Id" id="amenity-@amenity.Id"
+                                           checked="@Model.SelectedAmenityIds.Contains(amenity.Id)" />
+                                    <label class="form-check-label" for="amenity-@amenity.Id">
+                                        <i class="@amenity.IconClass"></i> @amenity.Name
+                                    </label>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Photos -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-1">5. Photos</h2>
+                    <p class="text-muted small">
+                        At least one photo is required. JPG, PNG or WEBP, up to @UploadRules.MaxImages photos, 4 MB each.
+                        If the form shows an error, you will need to choose your photos again.
+                    </p>
+
+                    <input type="file" id="Images" name="Images" class="form-control"
+                           accept=".jpg,.jpeg,.png,.webp" multiple required />
+                    <span asp-validation-for="Images" class="text-danger small"></span>
+
+                    <div id="preview" class="d-flex flex-wrap gap-2 mt-3"></div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mb-5">
+                <a asp-controller="Guest" asp-action="Dashboard" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-brand">Submit application</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Show small thumbnails of the chosen photos so the host can check them.
+        document.getElementById("Images").addEventListener("change", function () {
+            var preview = document.getElementById("preview");
+            preview.innerHTML = "";
+            Array.from(this.files).forEach(function (file) {
+                var img = document.createElement("img");
+                img.src = URL.createObjectURL(file);
+                img.alt = file.name;
+                img.className = "rounded border";
+                img.style.width = "110px";
+                img.style.height = "80px";
+                img.style.objectFit = "cover";
+                preview.appendChild(img);
+            });
+        });
+    </script>
+}
