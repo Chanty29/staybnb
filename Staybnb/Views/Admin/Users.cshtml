@@ -1,0 +1,70 @@
+@model List<UserRowViewModel>
+@{
+    ViewData["Title"] = "Users";
+    var query = ViewData["Query"] as string;
+}
+
+<h1 class="h3 mb-1">Users</h1>
+<p class="text-muted">Only the SuperAdmin can see this page. Find a Guest and promote them to Admin.</p>
+
+<form method="get" asp-action="Users" class="row g-2 mb-3">
+    <div class="col-sm-8 col-md-6">
+        <input name="q" value="@query" class="form-control" placeholder="Search by name or email" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-brand">Search</button>
+        <a asp-action="Users" class="btn btn-outline-secondary">Clear</a>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Joined</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="5" class="text-center text-muted py-4">No users found.</td></tr>
+                }
+
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td>@user.FullName</td>
+                        <td>@user.Email</td>
+                        <td>
+                            @foreach (var role in user.Roles)
+                            {
+                                var css = role == AppRoles.SuperAdmin ? "bg-dark"
+                                        : role == AppRoles.Admin ? "bg-primary"
+                                        : role == AppRoles.Host ? "bg-success"
+                                        : "bg-secondary";
+                                <span class="badge @css">@role</span>
+                            }
+                        </td>
+                        <td class="small">@user.CreatedAt.ToLocalTime().ToString("d MMM yyyy")</td>
+                        <td class="text-end">
+                            @if (user.IsGuest)
+                            {
+                                <form asp-action="PromoteToAdmin" asp-route-id="@user.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-primary btn-sm"
+                                            onclick="return confirm('Promote this Guest to Admin?');">
+                                        Promote to Admin
+                                    </button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

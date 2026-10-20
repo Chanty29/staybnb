@@ -1,9 +1,111 @@
+@model AdminDashboardViewModel
 @{
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<h1 class="h3">Admin Dashboard</h1>
+<h1 class="h3 mb-1">Dashboard overview</h1>
 <p class="text-muted">
     Logged in as @(User.IsInRole(AppRoles.SuperAdmin) ? "SuperAdmin" : "Admin").
-    Application review, user management and the activity log arrive in phase 6.
 </p>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100"><div class="card-body">
+            <div class="text-muted small">Total users</div>
+            <div class="fs-2 fw-bold">@Model.TotalUsers</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <a asp-action="Applications" class="text-decoration-none text-reset">
+            <div class="card shadow-sm h-100"><div class="card-body">
+                <div class="text-muted small">Pending host applications</div>
+                <div class="fs-2 fw-bold @(Model.PendingApplications > 0 ? "text-warning" : "")">@Model.PendingApplications</div>
+                <div class="small text-muted">Click to review</div>
+            </div></div>
+        </a>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100"><div class="card-body">
+            <div class="text-muted small">Active properties</div>
+            <div class="fs-2 fw-bold">@Model.ActiveProperties</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100"><div class="card-body">
+            <div class="text-muted small">Approved hosts</div>
+            <div class="fs-2 fw-bold">@Model.ApprovedHosts</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100"><div class="card-body">
+            <div class="text-muted small">Total bookings</div>
+            <div class="fs-2 fw-bold">@Model.TotalBookings</div>
+        </div></div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="h5 mb-0">Recent host applications</h2>
+                    <a asp-action="Applications" class="small">View all</a>
+                </div>
+
+                @if (!Model.RecentApplications.Any())
+                {
+                    <p class="text-muted mb-0">No applications yet.</p>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var a in Model.RecentApplications)
+                        {
+                            var badge = a.Status == ApplicationStatus.Approved ? "bg-success"
+                                      : a.Status == ApplicationStatus.Rejected ? "bg-danger"
+                                      : "bg-warning text-dark";
+                            <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-semibold">@a.ApplicationUser.FullName</div>
+                                    <div class="small text-muted">@a.Property.Title &middot; @a.AppliedAt.ToLocalTime().ToString("d MMM yyyy")</div>
+                                </div>
+                                <span class="badge @badge">@a.Status</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="h5 mb-0">Recent activity</h2>
+                    <a asp-action="ActivityLogs" class="small">View all</a>
+                </div>
+
+                @if (!Model.RecentActivity.Any())
+                {
+                    <p class="text-muted mb-0">Nothing logged yet.</p>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var log in Model.RecentActivity)
+                        {
+                            <li class="list-group-item px-0">
+                                <div>@log.Action</div>
+                                <div class="small text-muted">
+                                    @(log.User?.FullName ?? "System") &middot; @log.ActivityType &middot; @log.CreatedAt.ToLocalTime().ToString("d MMM yyyy, HH:mm")
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+</div>

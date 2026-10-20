@@ -1,0 +1,42 @@
+@model CheckInProcessViewModel
+@{
+    ViewData["Title"] = "Check-in rules";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <h1 class="h3 mb-1">Check-in rules</h1>
+        <p class="text-muted">For <strong>@Model.PropertyTitle</strong>. Guests with an approved booking complete these steps.</p>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form asp-action="CheckIn" method="post">
+                    <input type="hidden" asp-for="PropertyId" />
+                    <input type="hidden" asp-for="PropertyTitle" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control" />
+                        <span asp-validation-for="Title" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="RequiredDocuments" class="form-label"></label>
+                        <input asp-for="RequiredDocuments" class="form-control" />
+                        <span asp-validation-for="RequiredDocuments" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="StepsText" class="form-label"></label>
+                        <textarea asp-for="StepsText" rows="6" class="form-control"></textarea>
+                        <span asp-validation-for="StepsText" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-brand">Save rules</button>
+                    <a asp-action="Properties" class="btn btn-outline-secondary">Back</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

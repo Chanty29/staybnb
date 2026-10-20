@@ -9,40 +9,52 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg bg-white border-bottom">
-        <div class="container">
-            <a class="navbar-brand brand" asp-controller="Home" asp-action="Index">staybnb</a>
+    <nav class="navbar bg-white border-bottom">
+        <div class="container d-flex flex-wrap align-items-center gap-2">
+            <a class="navbar-brand brand me-3" asp-controller="Home" asp-action="Index">staybnb</a>
 
-            <div class="ms-auto d-flex align-items-center gap-2">
-                @if (User.Identity?.IsAuthenticated == true)
-                {
-                    if (User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.SuperAdmin))
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="d-flex flex-wrap gap-1 me-auto">
+                    @if (User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.SuperAdmin))
                     {
-                        <a class="btn btn-outline-secondary btn-sm" asp-controller="Admin" asp-action="Dashboard">Admin Dashboard</a>
+                        <a class="btn btn-light btn-sm" asp-controller="Admin" asp-action="Dashboard">Dashboard</a>
+                        <a class="btn btn-light btn-sm" asp-controller="Admin" asp-action="Applications">Host Applications</a>
+                        @if (User.IsInRole(AppRoles.SuperAdmin))
+                        {
+                            <a class="btn btn-light btn-sm" asp-controller="Admin" asp-action="Users">Users</a>
+                        }
+                        <a class="btn btn-light btn-sm" asp-controller="Admin" asp-action="ActivityLogs">Activity Log</a>
                     }
                     else if (User.IsInRole(AppRoles.Host))
                     {
-                        <a class="btn btn-outline-secondary btn-sm" asp-controller="Host" asp-action="Dashboard">Host Dashboard</a>
+                        <a class="btn btn-light btn-sm" asp-controller="Host" asp-action="Dashboard">Dashboard</a>
+                        <a class="btn btn-light btn-sm" asp-controller="Host" asp-action="Properties">My Properties</a>
+                        <a class="btn btn-light btn-sm" asp-controller="Host" asp-action="Bookings">Booking Requests</a>
                     }
                     else
                     {
-                        <a class="btn btn-outline-secondary btn-sm" asp-controller="Guest" asp-action="Dashboard">My Dashboard</a>
-                        <a class="btn btn-outline-secondary btn-sm" asp-controller="HostApplication" asp-action="Create">Become a Host</a>
-                        <a class="btn btn-outline-secondary btn-sm" asp-controller="HostApplication" asp-action="Status">Application Status</a>
+                        <a class="btn btn-light btn-sm" asp-controller="Guest" asp-action="Dashboard">My Dashboard</a>
+                        <a class="btn btn-light btn-sm" asp-controller="HostApplication" asp-action="Create">Become a Host</a>
+                        <a class="btn btn-light btn-sm" asp-controller="HostApplication" asp-action="Status">Application Status</a>
                     }
+                </div>
 
+                <div class="d-flex align-items-center gap-2">
                     <span class="text-muted small">@User.Identity.Name</span>
 
                     <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                         <button type="submit" class="btn btn-brand btn-sm">Logout</button>
                     </form>
-                }
-                else
-                {
+                </div>
+            }
+            else
+            {
+                <div class="ms-auto d-flex gap-2">
                     <a class="btn btn-outline-secondary btn-sm" asp-controller="Account" asp-action="Login">Login</a>
                     <a class="btn btn-brand btn-sm" asp-controller="Account" asp-action="Register">Sign up</a>
-                }
-            </div>
+                </div>
+            }
         </div>
     </nav>
 
