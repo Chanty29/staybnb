@@ -1,0 +1,51 @@
+@model List<Notification>
+@{
+    ViewData["Title"] = "Notifications";
+    var filter = ViewData["Filter"] as string ?? "all";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Notifications</h1>
+    <form asp-action="MarkAllRead" method="post">
+        <button type="submit" class="btn btn-outline-secondary btn-sm">Mark all as read</button>
+    </form>
+</div>
+
+<div class="d-flex gap-2 mb-3">
+    <a asp-action="Index" asp-route-filter="all" class="btn btn-sm @(filter == "all" ? "btn-dark" : "btn-outline-secondary")">All</a>
+    <a asp-action="Index" asp-route-filter="unread" class="btn btn-sm @(filter == "unread" ? "btn-dark" : "btn-outline-secondary")">Unread</a>
+    <a asp-action="Index" asp-route-filter="read" class="btn btn-sm @(filter == "read" ? "btn-dark" : "btn-outline-secondary")">Read</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-muted">Nothing here.</div>
+}
+else
+{
+    <div class="list-group shadow-sm">
+        @foreach (var n in Model)
+        {
+            <div class="list-group-item d-flex justify-content-between align-items-start @(n.IsRead ? "" : "bg-warning-subtle")">
+                <div>
+                    <div class="fw-semibold">
+                        @n.Title
+                        @if (!n.IsRead)
+                        {
+                            <span class="badge bg-danger ms-1">New</span>
+                        }
+                    </div>
+                    <div>@n.Message</div>
+                    <div class="small text-muted">@n.CreatedAt.ToLocalTime().ToString("d MMM yyyy, HH:mm")</div>
+                </div>
+
+                @if (!n.IsRead)
+                {
+                    <form asp-action="MarkRead" asp-route-id="@n.Id" asp-route-filter="@filter" method="post">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">Mark read</button>
+                    </form>
+                }
+            </div>
+        }
+    </div>
+}
