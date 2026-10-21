@@ -52,6 +52,7 @@ using (var scope = app.Services.CreateScope())
 {
     await RoleSeeder.SeedAsync(scope.ServiceProvider);
     await AmenitySeeder.SeedAsync(scope.ServiceProvider.GetRequiredService<ApplicationDbContext>());
+    await SampleDataSeeder.SeedAsync(scope.ServiceProvider);
 }
 
 if (!app.Environment.IsDevelopment())
