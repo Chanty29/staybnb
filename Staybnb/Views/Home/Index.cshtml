@@ -1,13 +1,69 @@
+@model HomeIndexViewModel
 @{
     ViewData["Title"] = "Home";
 }
 
-<div class="text-center py-5">
-    <h1 class="display-5 fw-bold">Relax. Unwind. Choose your next stay.</h1>
-    <p class="lead text-muted">Property gallery coming in phase 5.</p>
-
+<div class="text-center py-4">
+    <h1 class="display-6 fw-bold">Relax. Unwind. Choose your next stay.</h1>
     @if (User.Identity?.IsAuthenticated != true)
     {
-        <a class="btn btn-brand btn-lg mt-3" asp-controller="Account" asp-action="Register">Get started</a>
+        <a class="btn btn-brand mt-2" asp-controller="Account" asp-action="Register">Get started</a>
+    }
+</div>
+
+<form method="get" asp-action="Index" class="row g-2 justify-content-center mb-4">
+    <div class="col-sm-4 col-md-3">
+        <select name="city" class="form-select">
+            <option value="">All cities</option>
+            @foreach (var c in Model.Cities)
+            {
+                <option value="@c" selected="@(Model.City == c)">@c</option>
+            }
+        </select>
+    </div>
+    <div class="col-sm-4 col-md-3">
+        <select name="type" class="form-select">
+            <option value="">All property types</option>
+            @foreach (var t in Enum.GetValues<PropertyType>())
+            {
+                <option value="@t" selected="@(Model.Type == t)">@t</option>
+            }
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-brand">Search</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+    </div>
+</form>
+
+@if (!Model.Properties.Any())
+{
+    <div class="text-center text-muted py-5">No properties match your search yet.</div>
+}
+
+<div class="row g-4">
+    @foreach (var p in Model.Properties)
+    {
+        var cover = p.Images.FirstOrDefault();
+        <div class="col-sm-6 col-lg-4 col-xl-3">
+            <a asp-controller="Properties" asp-action="Details" asp-route-id="@p.Id" class="text-decoration-none text-reset">
+                <div class="card border-0 shadow-sm h-100">
+                    @if (cover != null)
+                    {
+                        <img src="@cover.ImageUrl" alt="@p.Title" class="card-img-top rounded"
+                             style="height: 200px; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted" style="height: 200px;">No photo</div>
+                    }
+                    <div class="card-body px-1">
+                        <div class="fw-semibold">@p.Title</div>
+                        <div class="text-muted small">@p.City &middot; @p.PropertyType &middot; up to @p.MaxGuests guests</div>
+                        <div class="mt-1"><strong>R @p.PricePerNight.ToString("N0")</strong> <span class="text-muted small">/ night</span></div>
+                    </div>
+                </div>
+            </a>
+        </div>
     }
 </div>

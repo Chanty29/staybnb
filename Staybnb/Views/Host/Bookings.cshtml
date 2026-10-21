@@ -47,6 +47,12 @@
                         <td>R @b.TotalPrice.ToString("N2")</td>
                         <td><partial name="_BookingStatusBadge" model="b.Status" /></td>
                         <td class="text-end">
+                            @if (b.GuestCheckIn != null && b.Status != BookingStatus.Cancelled)
+                            {
+                                <a asp-action="ReviewCheckIn" asp-route-id="@b.Id" class="btn btn-outline-primary btn-sm">
+                                    Check-in: @b.GuestCheckIn.Status
+                                </a>
+                            }
                             @if (b.Status == BookingStatus.Pending)
                             {
                                 <div class="d-flex gap-1 justify-content-end">

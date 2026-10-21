@@ -1,0 +1,75 @@
+@model List<Booking>
+@{
+    ViewData["Title"] = "My Bookings";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">My bookings</h1>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-brand btn-sm">Browse stays</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-muted">You have not booked anything yet.</div>
+}
+
+@foreach (var b in Model)
+{
+    var cover = b.Property.Images.FirstOrDefault();
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    @if (cover != null)
+                    {
+                        <img src="@cover.ImageUrl" alt="@b.Property.Title" class="img-fluid rounded"
+                             style="height: 130px; width: 100%; object-fit: cover;" />
+                    }
+                </div>
+
+                <div class="col-md-6">
+                    <h2 class="h5 mb-1">
+                        <a asp-controller="Properties" asp-action="Details" asp-route-id="@b.PropertyId" class="text-decoration-none">@b.Property.Title</a>
+                    </h2>
+                    <div class="text-muted small mb-2">
+                        @b.CheckInDate.ToString("d MMM yyyy") - @b.CheckOutDate.ToString("d MMM yyyy")
+                        &middot; @b.Nights night(s) &middot; @b.NumberOfGuests guest(s)
+                    </div>
+                    <div class="small">
+                        Cleaning fee R @b.CleaningFee.ToString("N2") &middot; Service fee R @b.ServiceFee.ToString("N2")
+                    </div>
+                    <div class="fw-bold">Total: R @b.TotalPrice.ToString("N2")</div>
+                    @if (b.Payment != null)
+                    {
+                        <div class="small text-muted">Payment: @b.Payment.Status</div>
+                    }
+                </div>
+
+                <div class="col-md-3 text-md-end">
+                    <partial name="_BookingStatusBadge" model="b.Status" />
+
+                    @if (b.GuestCheckIn != null)
+                    {
+                        <div class="small text-muted mt-1">Check-in: @b.GuestCheckIn.Status</div>
+                    }
+
+                    <div class="d-grid gap-2 mt-2">
+                        @if (b.Status == BookingStatus.Approved || b.Status == BookingStatus.CheckedIn)
+                        {
+                            <a asp-action="CheckIn" asp-route-id="@b.Id" class="btn btn-outline-primary btn-sm">
+                                @(b.Status == BookingStatus.CheckedIn ? "View check-in" : "Check-in")
+                            </a>
+                        }
+                        @if (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Approved)
+                        {
+                            <form asp-action="Cancel" asp-route-id="@b.Id" method="post">
+                                <button type="submit" class="btn btn-outline-danger btn-sm w-100"
+                                        onclick="return confirm('Cancel this booking?');">Cancel booking</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

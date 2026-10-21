@@ -20,13 +20,16 @@ public class HostController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IActivityLogger _activityLogger;
     private readonly INotificationService _notifications;
+    private readonly IWebHostEnvironment _env;
 
     public HostController(
         ApplicationDbContext db,
         UserManager<ApplicationUser> userManager,
         IActivityLogger activityLogger,
-        INotificationService notifications)
+        INotificationService notifications,
+        IWebHostEnvironment env)
     {
+        _env = env;
         _db = db;
         _userManager = userManager;
         _activityLogger = activityLogger;
@@ -126,6 +129,7 @@ public class HostController : Controller
         var query = _db.Bookings
             .Include(b => b.Property)
             .Include(b => b.Guest)
+            .Include(b => b.GuestCheckIn)
             .Where(b => b.Property.HostId == userId);
 
         if (status.HasValue)
@@ -186,6 +190,119 @@ public class HostController : Controller
             approved ? NotificationType.BookingApproved : NotificationType.BookingRejected);
 
         TempData["Success"] = approved ? "Booking approved." : "Booking rejected.";
+        return RedirectToAction(nameof(Bookings));
+    }
+
+    // ---------- Verifying a guest's check-in ----------
+
+    [HttpGet]
+    public async Task<IActionResult> ReviewCheckIn(int id)
+    {
+        var userId = _userManager.GetUserId(User)!;
+
+        var booking = await _db.Bookings
+            .Include(b => b.Property)
+            .Include(b => b.Guest)
+            .Include(b => b.GuestCheckIn).ThenInclude(c => c!.Documents)
+            .FirstOrDefaultAsync(b => b.Id == id && b.Property.HostId == userId);
+
+        if (booking == null)
+        {
+            return NotFound();
+        }
+
+        return View(booking);
+    }
+
+    // Serves an uploaded ID/passport, but only to the host who owns the booking.
+    [HttpGet]
+    public async Task<IActionResult> Document(int id)
+    {
+        var userId = _userManager.GetUserId(User)!;
+
+        var document = await _db.GuestDocuments
+            .Include(d => d.GuestCheckIn).ThenInclude(c => c.Booking).ThenInclude(b => b.Property)
+            .FirstOrDefaultAsync(d => d.Id == id && d.GuestCheckIn.Booking.Property.HostId == userId);
+
+        if (document == null)
+        {
+            return NotFound();
+        }
+
+        var path = Path.Combine(_env.ContentRootPath, "App_Data", "documents", document.FileName);
+        if (!System.IO.File.Exists(path))
+        {
+            return NotFound();
+        }
+
+        var contentType = Path.GetExtension(document.FileName).ToLowerInvariant() switch
+        {
+            ".pdf" => "application/pdf",
+            ".png" => "image/png",
+            _ => "image/jpeg"
+        };
+
+        return PhysicalFile(path, contentType);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public Task<IActionResult> VerifyCheckIn(int id) => ReviewCheckInAsync(id, verify: true);
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public Task<IActionResult> RejectCheckIn(int id) => ReviewCheckInAsync(id, verify: false);
+
+    private async Task<IActionResult> ReviewCheckInAsync(int bookingId, bool verify)
+    {
+        var userId = _userManager.GetUserId(User)!;
+
+        var booking = await _db.Bookings
+            .Include(b => b.Property)
+            .Include(b => b.GuestCheckIn).ThenInclude(c => c!.Documents)
+            .FirstOrDefaultAsync(b => b.Id == bookingId && b.Property.HostId == userId);
+
+        if (booking == null)
+        {
+            return NotFound();
+        }
+
+        var checkIn = booking.GuestCheckIn;
+        if (checkIn == null || checkIn.Status != CheckInStatus.Submitted || booking.Status != BookingStatus.Approved)
+        {
+            TempData["Error"] = "There is no submitted check-in to review for this booking.";
+            return RedirectToAction(nameof(Bookings));
+        }
+
+        foreach (var doc in checkIn.Documents.Where(d => d.Status == DocumentStatus.Pending))
+        {
+            doc.Status = verify ? DocumentStatus.Verified : DocumentStatus.Rejected;
+        }
+
+        checkIn.Status = verify ? CheckInStatus.Verified : CheckInStatus.Rejected;
+
+        if (verify)
+        {
+            booking.Status = BookingStatus.CheckedIn;
+        }
+
+        await _db.SaveChangesAsync();
+
+        await _activityLogger.LogAsync(userId, ActivityType.CheckIn,
+            $"Check-in {(verify ? "verified" : "rejected")} for booking #{booking.Id}");
+
+        if (verify)
+        {
+            await _activityLogger.LogAsync(userId, ActivityType.BookingStatusChange,
+                $"Booking #{booking.Id} status Approved -> CheckedIn");
+        }
+
+        await _notifications.NotifyAsync(booking.GuestId,
+            verify ? "Check-in Verified" : "Check-in Rejected",
+            verify
+                ? $"Your documents for '{booking.Property.Title}' were verified. You are checked in!"
+                : $"Your document for '{booking.Property.Title}' was rejected. Please upload it again.",
+            verify ? NotificationType.CheckInVerified : NotificationType.General);
+
+        TempData["Success"] = verify ? "Check-in verified. The guest is checked in." : "Check-in rejected. The guest can upload again.";
         return RedirectToAction(nameof(Bookings));
     }
 
