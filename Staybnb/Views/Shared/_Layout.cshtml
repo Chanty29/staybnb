@@ -1,3 +1,16 @@
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore
+@inject Staybnb.Data.ApplicationDbContext Db
+@{
+    var unreadNotifications = 0;
+    var unreadMessages = 0;
+    if (User.Identity?.IsAuthenticated == true)
+    {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        unreadNotifications = await Db.Notifications.CountAsync(n => n.UserId == currentUserId && !n.IsRead);
+        unreadMessages = await Db.Messages.CountAsync(m => m.ReceiverId == currentUserId && !m.IsRead);
+    }
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -42,6 +55,20 @@
                 </div>
 
                 <div class="d-flex align-items-center gap-2">
+                    <a class="btn btn-light btn-sm position-relative" asp-controller="Messages" asp-action="Index" title="Messages">
+                        <i class="bi bi-chat-dots"></i>
+                        @if (unreadMessages > 0)
+                        {
+                            <span class="badge rounded-pill bg-danger">@unreadMessages</span>
+                        }
+                    </a>
+                    <a class="btn btn-light btn-sm position-relative" asp-controller="Notifications" asp-action="Index" title="Notifications">
+                        <i class="bi bi-bell"></i>
+                        @if (unreadNotifications > 0)
+                        {
+                            <span class="badge rounded-pill bg-danger">@unreadNotifications</span>
+                        }
+                    </a>
                     <span class="text-muted small">@User.Identity.Name</span>
 
                     <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
