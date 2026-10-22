@@ -1,0 +1,41 @@
+@model ConversationViewModel
+@{
+    ViewData["Title"] = "Conversation";
+}
+
+<a asp-action="Index" class="small">&larr; Back to inbox</a>
+<h1 class="h4 mt-2 mb-3">@Model.Other.FullName</h1>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body" style="max-height: 420px; overflow-y: auto;">
+        @if (!Model.Messages.Any())
+        {
+            <div class="text-muted">No messages yet. Say hello below.</div>
+        }
+
+        @foreach (var m in Model.Messages)
+        {
+            var mine = m.SenderId == Model.CurrentUserId;
+            <div class="d-flex @(mine ? "justify-content-end" : "justify-content-start") mb-2">
+                <div class="rounded px-3 py-2 @(mine ? "bg-danger-subtle" : "bg-light border")" style="max-width: 75%;">
+                    <div style="white-space: pre-line;">@m.Content</div>
+                    <div class="small text-muted">
+                        @m.Timestamp.ToLocalTime().ToString("d MMM, HH:mm")
+                        @if (mine)
+                        {
+                            <span>&middot; @(m.IsRead ? "Read" : "Unread")</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<form asp-action="Send" method="post">
+    <input type="hidden" name="receiverId" value="@Model.Other.Id" />
+    <div class="input-group">
+        <textarea name="content" class="form-control" rows="2" maxlength="2000" placeholder="Write a message" required></textarea>
+        <button type="submit" class="btn btn-brand">Send</button>
+    </div>
+</form>
