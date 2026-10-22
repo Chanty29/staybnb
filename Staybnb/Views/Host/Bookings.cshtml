@@ -41,6 +41,7 @@
                         <td>
                             <div>@b.Guest.FullName</div>
                             <div class="small text-muted">@b.Guest.Email</div>
+                            <a asp-controller="Messages" asp-action="Conversation" asp-route-id="@b.GuestId" class="small">Message guest</a>
                         </td>
                         <td class="small">@b.CheckInDate.ToString("d MMM") - @b.CheckOutDate.ToString("d MMM yyyy")<br />@b.Nights night(s)</td>
                         <td>@b.NumberOfGuests</td>

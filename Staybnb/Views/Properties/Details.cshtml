@@ -100,6 +100,9 @@
 
                         <button type="submit" class="btn btn-brand w-100">Request to book</button>
                     </form>
+
+                    <a asp-controller="Messages" asp-action="Conversation" asp-route-id="@Model.HostId"
+                       class="btn btn-outline-secondary w-100 mt-2">Message host</a>
                 }
                 else if (User.Identity?.IsAuthenticated == true)
                 {
