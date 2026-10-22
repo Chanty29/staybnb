@@ -29,5 +29,26 @@ Default SuperAdmin (change in `appsettings.json`): `superadmin@staybnb.com` / `S
 - [x] Phase 4 - Host dashboard, admin approval, user promotion, activity log
 - [x] Phase 5 - Guest browsing, booking, check-in
 - [x] Phase 6 - Admin dashboard
-- [ ] Phase 7 - Messaging, notifications, activity logging
-- [ ] Phase 8 - Seed data, testing, final polish
+- [x] Phase 7 - Messaging, notifications, activity logging
+- [x] Phase 8 - Seed data, testing, final polish
+
+## Demo accounts (created automatically on first run)
+
+| Role | Email | Password |
+|------|-------|----------|
+| SuperAdmin | superadmin@staybnb.com | SuperAdmin@123 |
+| Admin | admin@staybnb.com | Admin@12345 |
+| Host | host@staybnb.com | Host@12345 |
+| Guest | guest@staybnb.com | Guest@12345 |
+
+The sample host owns four active properties. The sample guest has one pending and one approved booking.
+
+## Main features
+
+- Roles: Guest, Host, Admin, SuperAdmin with strict `[Authorize(Roles = ...)]`
+- Host application with photo upload, approved by an Admin (Guest role swapped for Host)
+- Host dashboard: properties, activate/deactivate, booking requests, check-in rules
+- Guest gallery with city/type filters, booking engine (total = price x nights + cleaning fee + service fee)
+- Check-in workflow with ID/passport upload and host verification (Pending, Approved, CheckedIn)
+- Admin dashboard, SuperAdmin user promotion, activity log
+- Database-backed messaging inbox and notification bell (read/unread)
